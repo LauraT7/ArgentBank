@@ -15,7 +15,7 @@ function Nav() {
   const handleLogout = () => {
     dispatch(logout());
     localStorage.clear();
-    navigate('/sign-in');
+    navigate('/'); 
   };
 
   return (
@@ -37,7 +37,7 @@ function Nav() {
             </a>
             <a
               className="main-nav-item"
-              href="/sign-in"
+              href="/"
               onClick={(e) => {
                 e.preventDefault();
                 handleLogout();
