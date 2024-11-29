@@ -1,10 +1,10 @@
 import React from 'react';
-import FeatureItem from './FeatureItem'; // Assurez-vous que le chemin est correct
+import FeatureItem from './FeatureItem';
 import './css/Features.css';
 
-import chatIcon from './css/img/icon-chat.png';
-import moneyIcon from './css/img/icon-money.png';
-import securityIcon from './css/img/icon-security.png';
+import chatIcon from './css/img/icon-chat.webp';
+import moneyIcon from './css/img/icon-money.webp';
+import securityIcon from './css/img/icon-security.webp';
 
 function Features() {
   return (

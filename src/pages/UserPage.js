@@ -1,22 +1,51 @@
-
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import UserHeader from '../components/UserHeader';
 import Account from '../components/Account';
-import { updateUsername } from '../features/userSlice';
+import { updateUserName } from '../features/userSlice';
 
 function UserPage() {
   const dispatch = useDispatch();
-  const username = useSelector((state) => state.user.username);
-  const [newUsername, setNewUsername] = useState('');
+  const userName = useSelector((state) => state.user.userName);
+  const [newUserName, setNewUserName] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
 
-  const handleUsernameChange = (e) => {
-    setNewUsername(e.target.value);
-  };
+  const handleUserNameChange = (e) => setNewUserName(e.target.value);
 
-  const handleFormSubmit = (e) => {
+  const handleFormSubmit = async (e) => {
     e.preventDefault();
-    dispatch(updateUsername(newUsername));
+
+    if (!newUserName) {
+      setErrorMessage("Le champ ne peut pas être vide.");
+      return;
+    }
+
+    setErrorMessage('');
+    setSuccessMessage('');
+
+    try {
+      const response = await fetch('http://localhost:3001/api/v1/user/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + localStorage.getItem('token'),
+        },
+        body: JSON.stringify({
+          userName: newUserName,
+        }),
+      });
+
+      if (response.ok) {
+        dispatch(updateUserName(newUserName));
+        setSuccessMessage('Votre nom d’utilisateur a été mis à jour avec succès !');
+      } else {
+        setErrorMessage('Une erreur est survenue lors de la mise à jour.');
+      }
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour des informations :", error);
+      setErrorMessage('Impossible de mettre à jour votre nom d’utilisateur.');
+    }
   };
 
   return (
@@ -38,23 +67,7 @@ function UserPage() {
         amount="$184.30"
         description="Current Balance"
       />
-      <section className="edit-username">
-        <h3>Edit Username</h3>
-        <form onSubmit={handleFormSubmit}>
-          <div className="input-wrapper">
-            <label htmlFor="newUsername">New Username</label>
-            <input
-              type="text"
-              id="newUsername"
-              value={newUsername}
-              onChange={handleUsernameChange}
-            />
-          </div>
-          <button type="submit" className="edit-button">
-            Update Username
-          </button>
-        </form>
-      </section>
+
     </main>
   );
 }

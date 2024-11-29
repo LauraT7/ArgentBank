@@ -7,7 +7,6 @@ const store = configureStore({
     user: userReducer,
     auth: authReducer,
   },
-  // Ajout de Redux DevTools
   devTools: process.env.NODE_ENV !== 'production',
 });
 

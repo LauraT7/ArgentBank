@@ -1,54 +1,57 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import { logout as userLogout } from '../features/userSlice';  // Logout from userSlice
-import { logout as authLogout } from '../features/authSlice'; 
+import { useSelector, useDispatch } from 'react-redux';
+import { logout } from '../features/userSlice';
 import './css/Nav.css';
-import logo from './css/img/argentBankLogo.png';
+import logo from './css/img/argentBankLogo.webp';
 
 function Nav() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  
-  const firstName = useSelector((state) => state.user.firstName);  // Récupérer le prénom depuis Redux
-  const lastName = useSelector((state) => state.user.lastName);  // Récupérer le nom de famille depuis Redux
-  const isLoggedIn = useSelector((state) => state.user.isLoggedIn);  // Vérifier si l'utilisateur est connecté
+
+  const userName = useSelector((state) => state.user.userName);
+  const isLoggedIn = useSelector((state) => state.user.isLoggedIn);
 
   const handleLogout = () => {
-    dispatch(userLogout());
-    dispatch(authLogout());
+    dispatch(logout());
     localStorage.clear();
     navigate('/sign-in');
-    window.location.reload();  // Forcer le rechargement de la page pour éviter le cache
   };
-  
+
   return (
     <nav className="main-nav">
-      <button className="main-nav-logo" onClick={() => navigate('/')}>
+      <a className="main-nav-logo" href="/">
         <img
           className="main-nav-logo-image"
           src={logo}
           alt="Argent Bank Logo"
         />
         <h1 className="sr-only">Argent Bank</h1>
-      </button>
+      </a>
       <div>
         {isLoggedIn ? (
           <>
-            <button className="main-nav-item" onClick={() => navigate('/user')}>
+            <a className="main-nav-item" href="/user">
               <i className="fa fa-user-circle"></i>
-              {firstName} {lastName}  {/* Afficher le prénom et le nom */}
-            </button>
-            <button className="main-nav-item" onClick={handleLogout}>
+              {userName || 'Utilisateur'}
+            </a>
+            <a
+              className="main-nav-item"
+              href="/sign-in"
+              onClick={(e) => {
+                e.preventDefault();
+                handleLogout();
+              }}
+            >
               <i className="fa fa-sign-out"></i>
               Sign Out
-            </button>
+            </a>
           </>
         ) : (
-          <button className="main-nav-item" onClick={() => navigate('/sign-in')}>
-            <i className="fa fa-sign-in"></i>
+          <a className="main-nav-item" href="/sign-in">
+            <i className="fa fa-user-circle"></i>
             Sign In
-          </button>
+          </a>
         )}
       </div>
     </nav>
