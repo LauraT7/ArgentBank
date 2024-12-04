@@ -1,0 +1,410 @@
+swagger: '2.0'
+info:
+  title: Bank Argent API documentation
+  description: Contains all available API endpoints in this codebase
+  version: '1.0.0'
+  termsOfService: 'http://swagger.io/terms/'
+host: localhost:3001
+basePath: /api/v1
+schemes:
+  - http
+paths:
+  /user/login:
+    post:
+      tags:
+        - User Module
+      summary: Login
+      description: API for logging in a user using their email and password. Returns a JWT token upon successful login.
+      parameters:
+        - in: body
+          name: body
+          description: Login Payload containing email and password.
+          required: true
+          schema:
+            $ref: '#/definitions/Login'
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Login Successfully
+          schema:
+            $ref: '#/definitions/LoginResponse'
+          examples:
+            application/json:
+              token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        '400':
+          description: Invalid Fields - The provided email or password is incorrect.
+        '500':
+          description: Internal Server Error - An unexpected error occurred during login.
+  /user/signup:
+    post:
+      tags:
+        - User Module
+      summary: Signup
+      description: API for creating a new user account. Requires email, password, and other user details.
+      parameters:
+        - in: body
+          name: body
+          description: Signup Payload containing user details.
+          required: true
+          schema:
+            $ref: '#/definitions/User'
+      produces:
+        - application/json
+      responses:
+        '201':
+          description: Signup Successfully
+          schema:
+            $ref: '#/definitions/ApiResponse'
+          examples:
+            application/json:
+              status: 201
+              message: "User created successfully."
+              body:
+                id: "user001"
+                email: "user@example.com"
+        '400':
+          description: Invalid Fields - One or more required fields are missing or invalid.
+        '500':
+          description: Internal Server Error - An unexpected error occurred during signup.
+  /user/profile:
+    get:
+      security:
+        - Bearer: []
+      tags:
+        - User Module
+      summary: User Profile API
+      description: API for fetching a user's profile information. Requires a valid JWT token.
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: User profile retrieved successfully
+          schema:
+            $ref: '#/definitions/ApiResponse'
+          examples:
+            application/json:
+              status: 200
+              message: "User profile retrieved successfully."
+              body:
+                id: "user001"
+                email: "user@example.com"
+                userName: "john_doe"
+        '400':
+          description: Invalid Fields - The request is missing required parameters.
+        '401':
+          description: Unauthorized - The user is not authenticated. A valid JWT token is required.
+        '500':
+          description: Internal Server Error - An unexpected error occurred while fetching the profile.
+    put:
+      security:
+        - Bearer: []
+      tags:
+        - User Module
+      summary: Update User Profile API
+      description: API for updating a user's profile information such as username, email, first name, or last name. Requires a valid JWT token.
+      parameters:
+        - in: body
+          name: body
+          description: Update user profile attributes (e.g., userName, email, firstName, lastName).
+          required: true
+          schema:
+            $ref: '#/definitions/UserProfile'
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: User profile updated successfully
+          schema:
+            $ref: '#/definitions/ApiResponse'
+          examples:
+            application/json:
+              status: 200
+              message: "User profile updated successfully."
+              body:
+                userName: "new_username"
+                email: "new_email@example.com"
+        '400':
+          description: Invalid Fields - The provided data is invalid.
+        '401':
+          description: Unauthorized - The user is not authenticated. A valid JWT token is required.
+        '500':
+          description: Internal Server Error - An unexpected error occurred while updating the profile.
+  /transactions:
+    get:
+      security:
+        - Bearer: []  # protège avec un token JWT
+      tags:
+        - Transaction Module
+      summary: Retrieve all transactions
+      description: API to retrieve all transactions for the current user, grouped by account. If no month is specified, transactions for the current month are returned by default.
+      parameters:
+        - in: query
+          name: month
+          required: false
+          schema:
+            type: string
+            format: date
+          description: Filter transactions by the month (format YYYY-MM). If not provided, transactions for the current month are returned.
+      responses:
+        '200':
+          description: A list of transactions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Transaction'
+          examples:
+            application/json:
+              - id: "txn001"
+                date: "2024-11-01"
+                description: "Courses alimentaires"
+                amount: -50.00
+                balance: 950.00
+                transactionType: "debit"
+                category: "Alimentation"
+                note: "Achat au supermarché."
+              - id: "txn002"
+                date: "2024-11-02"
+                description: "Paiement en ligne"
+                amount: -20.00
+                balance: 930.00
+                transactionType: "debit"
+                category: "Loisir"
+                note: "Streaming service."
+        '400':
+          description: Invalid month format - The month should be in the format YYYY-MM.
+        '401':
+          description: Unauthorized - The user is not authenticated. A valid JWT token is required.
+        '500':
+          description: Internal Server Error - An unexpected error occurred while retrieving transactions.
+    post:
+      security:
+        - Bearer: []
+      tags:
+        - Transaction Module
+      summary: Add a new transaction
+      description: API to add a new transaction for the current user. Requires a valid JWT token.
+      parameters:
+        - in: body
+          name: body
+          description: Transaction details to be added.
+          required: true
+          schema:
+            $ref: '#/definitions/Transaction'
+      produces:
+        - application/json
+      responses:
+        '201':
+          description: Transaction created successfully
+          schema:
+            $ref: '#/definitions/Transaction'
+          examples:
+            application/json:
+              id: "txn003"
+              date: "2024-11-05"
+              description: "Restaurant"
+              amount: -70.00
+              balance: 860.00
+              transactionType: "debit"
+              category: "Loisir"
+              note: "Dîner entre amis."
+        '400':
+          description: Invalid input - The provided transaction data is invalid.
+        '401':
+          description: Unauthorized - The user is not authenticated. A valid JWT token is required.
+        '500':
+          description: Internal Server Error - An unexpected error occurred while adding the transaction.
+  /transactions/{transactionId}:
+    get:
+      security:
+        - Bearer: []  # protège aussi avec un token JWT
+      tags:
+        - Transaction Module
+      summary: Retrieve transaction details
+      description: API to retrieve details of a specific transaction by ID. Requires a valid JWT token.
+      parameters:
+        - in: path
+          name: transactionId
+          required: true
+          type: string
+          description: ID of the transaction to retrieve.
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Transaction details
+          schema:
+            $ref: '#/definitions/Transaction'
+          examples:
+            application/json:
+              id: "txn001"
+              date: "2024-11-01"
+              description: "Courses alimentaires"
+              amount: -50.00
+              balance: 950.00
+              transactionType: "debit"
+              category: "Alimentation"
+              note: "Achat au supermarché."
+        '401':
+          description: Unauthorized - The user is not authenticated. A valid JWT token is required.
+        '404':
+          description: Transaction not found - No transaction found with the given ID.
+        '500':
+          description: Internal Server Error - An unexpected error occurred while retrieving the transaction.
+    put:
+      security:
+        - Bearer: []  # new route pour MàJ les informations d'une transaction (ex: catégorie ou note)
+      tags:
+        - Transaction Module
+      summary: Update transaction details
+      description: API to update a transaction's details (e.g., category or note). Requires a valid JWT token.
+      parameters:
+        - in: path
+          name: transactionId
+          required: true
+          type: string
+          description: ID of the transaction to update.
+        - in: body
+          name: body
+          description: Updated transaction details.
+          required: true
+          schema:
+            $ref: '#/definitions/UpdateTransaction'
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Transaction updated successfully
+          schema:
+            $ref: '#/definitions/Transaction'
+          examples:
+            application/json:
+              id: "txn001"
+              date: "2024-11-01"
+              description: "Courses alimentaires"
+              amount: -50.00
+              balance: 950.00
+              transactionType: "debit"
+              category: "Nourriture et boissons"
+              note: "Mise à jour de la note pour refléter un achat spécial."
+        '400':
+          description: Invalid input - The provided data is invalid.
+        '401':
+          description: Unauthorized - The user is not authenticated. A valid JWT token is required.
+        '404':
+          description: Transaction not found - No transaction found with the given ID.
+        '500':
+          description: Internal Server Error - An unexpected error occurred while updating the transaction.
+    delete:
+      security:
+        - Bearer: []
+      tags:
+        - Transaction Module
+      summary: Delete a transaction
+      description: API to delete a specific transaction by ID. Requires a valid JWT token.
+      parameters:
+        - in: path
+          name: transactionId
+          required: true
+          type: string
+          description: ID of the transaction to delete.
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Transaction deleted successfully
+        '401':
+          description: Unauthorized - The user is not authenticated. A valid JWT token is required.
+        '404':
+          description: Transaction not found - No transaction found with the given ID.
+        '500':
+          description: Internal Server Error - An unexpected error occurred while deleting the transaction.
+securityDefinitions:
+  Bearer:
+    type: apiKey
+    name: Authorization
+    in: header
+    description: The Bearer security token is used to secure endpoints, ensuring that only authenticated users can interact with the API.
+definitions:
+  User:
+    type: object
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+      firstName:
+        type: string
+      lastName:
+        type: string
+      userName:
+        type: string
+  Login:
+    type: object
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+  ApiResponse:
+    type: object
+    properties:
+      status:
+        type: integer
+      message:
+        type: string
+      body:
+        type: object
+        properties:
+          id:
+            type: string
+          email:
+            type: string
+  LoginResponse:
+    type: object
+    properties:
+      token:
+        type: string
+  UserProfile:
+    type: object
+    properties:
+      userName:
+        type: string
+      email:
+        type: string
+      firstName:
+        type: string
+      lastName:
+        type: string
+  Transaction:
+    type: object  # new définition pour représenter une transaction
+    properties:
+      id:
+        type: string
+      date:
+        type: string
+      description:
+        type: string
+      amount:
+        type: number
+      balance:
+        type: number
+      transactionType:
+        type: string
+      category:
+        type: string
+      note:
+        type: string
+  UpdateTransaction:
+    type: object  # new définition pour les MàJ de transaction
+    properties:
+      category:
+        type: string
+      note:
+        type: string
