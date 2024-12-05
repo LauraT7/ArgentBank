@@ -12,6 +12,8 @@ function UserHeader() {
     const token = useSelector((state) => state.auth?.token);
     const dispatch = useDispatch();
 
+    const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
+
     const handleSaveClick = async () => {
         if (!newUserName) {
             alert("Le nom d'utilisateur ne peut pas être vide.");
@@ -24,7 +26,7 @@ function UserHeader() {
             lastName: lastName, 
         };
 
-        const response = await fetch("http://localhost:3001/api/v1/user/profile", {
+        const response = await fetch(`${API_URL}/v1/user/profile`, {
             method: "PUT",
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -73,12 +75,12 @@ function UserHeader() {
                         <input type="text" value={lastName} disabled />
                     </label>
                     <div className="edit-button-form">
-                    <button className="edit-button" type="button" onClick={handleSaveClick}>
-                        Save
-                    </button>
-                    <button className="edit-button" type="button" onClick={() => setIsEditing(false)}>
-                        Cancel
-                    </button>
+                        <button className="edit-button" type="button" onClick={handleSaveClick}>
+                            Save
+                        </button>
+                        <button className="edit-button" type="button" onClick={() => setIsEditing(false)}>
+                            Cancel
+                        </button>
                     </div>
                 </form>
             )}

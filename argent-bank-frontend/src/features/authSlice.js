@@ -1,17 +1,19 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
 
 export const loginUser = createAsyncThunk(
   'auth/loginUser',
   async (credentials, { rejectWithValue }) => {
     try {
-      const response = await axios.post('http://localhost:3001/api/v1/user/login', credentials);
+      const response = await axios.post(`${API_URL}/v1/user/login`, credentials);
       console.log('API login response:', response.data);
-      const { token } = response.data.body; 
-      return { token }; 
+      const { token } = response.data.body;
+      return { token };
     } catch (error) {
-      return rejectWithValue(error.response.data.message);
+      console.error('Error during login:', error.response?.data?.message || error.message);
+      return rejectWithValue(error.response?.data?.message || 'Unknown error');
     }
   }
 );
@@ -23,7 +25,7 @@ export const fetchUserProfile = createAsyncThunk(
     const token = state.auth.token;
 
     try {
-      const response = await axios.post('http://localhost:3001/api/v1/user/profile', null, {
+      const response = await axios.post(`${API_URL}/v1/user/profile`, null, {
         headers: { Authorization: `Bearer ${token}` },
       });
       console.log('Profile API response:', response.data.body);
